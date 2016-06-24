@@ -40,7 +40,9 @@ def poller(sock, running):
 		# Retrieve the actual socket from its file descriptor
 			s = fd_to_socket[fd]
 			if flag & (select.POLLIN | select.POLLPRI):
-				PONG(sock)
+				if():	
+					print("fuck your python\n")
+				#PONG(sock)
 
 def user_create(sock):
 	user = "user stephen james iracane reed\n"
@@ -52,11 +54,14 @@ def user_create(sock):
 
 #ping response found with the help of SPC Primm
 def PONG(sock):
-	x = sock.recv(1024)
-	x = x.decode("utf-8")
-	print(x)
-	if "PING :" in x:
+	if "PING" in x:
+		if ":Supports" not in x:
+			x = sock.recv(1024)
+			x = x.decode("utf-8")
+			print(x)
+	else:
 		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
+	print("no SHIT FUCK YOU PYTHOn\n")
 
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
@@ -107,7 +112,7 @@ def main():
 						commands[command](session, c[1])
 				else:
 					if command in commands.keys():
-						commands[command](sd)
+						x = commands[command](sd)
 			elif session.channel:
 				commands["NOTICE"](session, (session.channel + " " + x))
 		except KeyboardInterrupt:
