@@ -59,13 +59,12 @@ def user_create(sock):
 
 #ping response found with the help of SPC Primm
 def PONG(sock):
+	x = sock.recv(1024)
+	x = x.decode("utf-8")
+	print(x)
 	if "PING" in x:
 		if ":Supports" not in x:
-			x = sock.recv(1024)
-			x = x.decode("utf-8")
-			print(x)
-	else:
-		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
+			sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
 	print("no SHIT FUCK YOU PYTHOn\n")
 
 #basic outline for how to send message acquired from 
