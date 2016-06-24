@@ -40,9 +40,14 @@ def poller(sock, running):
 		# Retrieve the actual socket from its file descriptor
 			s = fd_to_socket[fd]
 			if flag & (select.POLLIN | select.POLLPRI):
-				if():	
-					print("fuck your python\n")
-				#PONG(sock)
+				#x = sock.recv(1024)
+				#x = x.decode("utf-8")
+				#if "PING" in x and ":Supports" not in x:
+				#	print("fuck")
+				#else:
+				#	sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
+				PONG(sock)
+				
 
 def user_create(sock):
 	user = "user stephen james iracane reed\n"
