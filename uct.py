@@ -69,9 +69,10 @@ def PONG(sock):
 			
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
-def send_msg(sock, message):
+	
+def send_msg(session, message):
 	message = message.split(" ", 1)
-	sock.send(bytes("privmsg " + message[0] + " :" + message[1] + "\n", "utf-8"))
+	session.sock.send(bytes("privmsg " + message[0] + " :" + message[1] + "\n", "utf-8"))
 
 def send_help(sock):
 	sock.send(bytes("help\n", "utf-8"))
@@ -113,7 +114,6 @@ def leave(session, message):
 	if len(command) > 1:
 		command[1] = ":" + command[1]
 		message = command[0] + " " + command[1]
-		
 	session.sock.send(bytes("part " + message + "\n", "utf-8"))
 #end
 
