@@ -62,11 +62,9 @@ def PONG(sock):
 	x = sock.recv(1024)
 	x = x.decode("utf-8")
 	print(x)
-	if "PING" in x:
-		if ":Supports" not in x:
+	if "PING" in x and ":Supports" not in x:
 			sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
-	print("no SHIT FUCK YOU PYTHOn\n")
-
+			
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
 def send_msg(sock, message):
@@ -82,15 +80,32 @@ def send_help(sock):
 def send_quit(sock):
 	sock.send(bytes("quit\n", "utf-8"))
 
+#logic and structure found from working with
+#SPC Primm
+#start
 def channel_switch(session, channel):
 	if channel[0] != "#":
 		channel = "#" + channel
 	session.channel = channel
 	session.sock.send(bytes("join " + channel + "\n", "utf-8"))
 
+def away(session, message):
+	if message:
+		command = message.split(" ", 1)
+		if len(command) > 1:
+			command[1] = ":" + command[1]
+			message = command[0] + " " + command[1]
+		session.sock.send(bytes("away "+message + "\n", "utf-8"))
+	else:
+		session.sock.send(bytes("away\n", "utf-8"))
+
+	
+
+#end
+
 def main():
 	commands = {
-		"AWAY":None, "ISON":None, "HELP":send_help, "INFO":send_help,
+		"AWAY":away, "ISON":None, "HELP":send_help, "INFO":send_help,
 		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":None, 
 		"NOTICE":send_msg, "PART":None, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":send_quit, 
 		"TOPIC":None, "WALLOPS":None, "WHO":None, "WHOIS":None
