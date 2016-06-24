@@ -3,6 +3,8 @@
 import socket
 import threading
 import select
+import signal
+import sys
 
 #basis acquired on 
 #http://www.tutorialspoint.com/python/python_multithreading.htm
@@ -12,18 +14,19 @@ class myThread (threading.Thread):
 		self.threadID = threadID
 		self.name = name
 		self.sock = sock
+		self.running = [1]
 	def run(self):
 		print("Starting " + self.name)
-		poller(self.sock)
+		poller(self.sock, self.running)
 
-def poller(sock):
+def poller(sock, running):
 	#copied from https://pymotw.com/2/select/ and with help of SPC Primm
 	READ_ONLY = select.POLLIN | select.POLLPRI | select.POLLHUP | select.POLLERR
 	TIMEOUT = 200
 	poller = select.poll()
 	poller.register(sock, READ_ONLY)
 	fd_to_socket = { sock.fileno(): sock,}
-	while True:
+	while running[0]:
 	# Wait for at least one of the sockets to be ready for processing
 		events = poller.poll(TIMEOUT)
 		for fd, flag in events:
@@ -50,6 +53,8 @@ def PONG(sock):
 		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
 	print("Enter a command: ")
 
+#basic outline for how to send message acquired from 
+#https://github.com/dsprimm/uct/blob/master/uct.py
 def send_msg(sock, message):
 	message = message.split(" ", 1)
 	sock.send(bytes("privmsg " + message[0] + " :" + message[1] + "\n", "utf-8"))
@@ -59,6 +64,9 @@ def send_help(sock):
 	x = sock.recv(1024)
 	x = x.decode("utf-8")
 	print(x)
+
+def send_quit(sock):
+	sock.send(bytes("quit\n", "utf-8"))
 
 def main():
 	commands = {
@@ -75,20 +83,25 @@ def main():
 	thread.start()
 	channel = None
 	while True:
-		x = input("Enter a command: ")
-		character = x.split(" ", 1)
-		command = character[0].upper()
-		if command in commands.keys():
-			print(command)
-			if command == 'JOIN':
-				channel = character[1]
-				commands[command](sd, character[1])
-			elif command == 'HELP':
-				commands[command](sd)
-		elif channel:
-			commands["PRIVMSG"](sock, (channel + " " + x))
-
-
+		try:
+			x = input("Enter a command: ")
+			character = x.split(" ", 1)
+			command = character[0].upper()
+			if command in commands.keys():
+				#print(command)
+				if command == 'JOIN':
+					channel = character[1]
+					commands[command](sd, character[1])
+				elif command == 'HELP':
+					commands[command](sd)
+			elif channel:
+				commands["PRIVMSG"](sock, (channel + " " + x))
+		except KeyboardInterrupt:
+			#this logic acquried through help from SPC Primm
+			print("Keyboard Interrupt caught")
+			thread.running[0] = 0
+			thread.join()
+			break
 
 if __name__ == "__main__":
-	main()
+	main()   
