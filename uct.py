@@ -99,13 +99,14 @@ def away(session, message):
 	else:
 		session.sock.send(bytes("away\n", "utf-8"))
 
-	
+def ison(session, person):
+	session.sock.send(bytes("ison "+person+"\n", "utf-8"))	
 
 #end
 
 def main():
 	commands = {
-		"AWAY":away, "ISON":None, "HELP":send_help, "INFO":send_help,
+		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
 		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":None, 
 		"NOTICE":send_msg, "PART":None, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":send_quit, 
 		"TOPIC":None, "WALLOPS":None, "WHO":None, "WHOIS":None
