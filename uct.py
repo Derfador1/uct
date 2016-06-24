@@ -5,9 +5,11 @@ import threading
 import select
 import signal
 import sys
+import time
 
-#basis acquired on 
+#basis for both classes acquired on 
 #http://www.tutorialspoint.com/python/python_multithreading.htm
+#and from help from SPC Primm
 class myThread (threading.Thread):
 	def __init__(self, threadID, name, sock):
 		threading.Thread.__init__(self)
@@ -18,6 +20,11 @@ class myThread (threading.Thread):
 	def run(self):
 		print("Starting " + self.name)
 		poller(self.sock, self.running)
+
+class status:
+	def __init__(self):
+		self.channel = None
+		self.sock = None
 
 def poller(sock, running):
 	#copied from https://pymotw.com/2/select/ and with help of SPC Primm
@@ -45,13 +52,11 @@ def user_create(sock):
 
 #ping response found with the help of SPC Primm
 def PONG(sock):
-	print("Enter a command: ")
 	x = sock.recv(1024)
 	x = x.decode("utf-8")
 	print(x)
-	if "PING" in x:
+	if "PING :" in x:
 		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
-	print("Enter a command: ")
 
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
@@ -68,40 +73,49 @@ def send_help(sock):
 def send_quit(sock):
 	sock.send(bytes("quit\n", "utf-8"))
 
+def channel_switch(session, channel):
+	if channel[0] != "#":
+		channel = "#" + channel
+	session.channel = channel
+	session.sock.send(bytes("join " + channel + "\n", "utf-8"))
+
 def main():
 	commands = {
 		"AWAY":None, "ISON":None, "HELP":send_help, "INFO":send_help,
-		"JOIN":None, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":None, 
-		"NOTICE":send_msg, "PART":None, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":None, 
+		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":None, 
+		"NOTICE":send_msg, "PART":None, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":send_quit, 
 		"TOPIC":None, "WALLOPS":None, "WHO":None, "WHOIS":None
 	}
 
 	sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sd.connect(("127.0.0.1", 6667))
+	session = status()
+	session.sock = sd
 	user_create(sd)
 	thread = myThread(1, "Thread 1", sd)
 	thread.start()
 	channel = None
 	while True:
 		try:
-			x = input("Enter a command: ")
-			character = x.split(" ", 1)
-			command = character[0].upper()
-			if command in commands.keys():
-				#print(command)
-				if command == 'JOIN':
-					channel = character[1]
-					commands[command](sd, character[1])
-				elif command == 'HELP':
-					commands[command](sd)
-			elif channel:
-				commands["PRIVMSG"](sock, (channel + " " + x))
+			x = input("Enter a command2: ")
+			if x[0] == '/':
+				c = x.split(" ", 1)
+				c[0] = c[0][1:].upper()
+				command = c[0]
+				if(len(c) > 1):
+					if command in commands.keys():
+						commands[command](session, c[1])
+				else:
+					if command in commands.keys():
+						commands[command](sd)
+			elif session.channel:
+				commands["NOTICE"](session, (session.channel + " " + x))
 		except KeyboardInterrupt:
-			#this logic acquried through help from SPC Primm
-			print("Keyboard Interrupt caught")
+			print("Keyboard Interrupt caught..")
 			thread.running[0] = 0
 			thread.join()
 			break
+
 
 if __name__ == "__main__":
 	main()   
