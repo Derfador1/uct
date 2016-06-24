@@ -61,9 +61,11 @@ def user_create(sock):
 def PONG(sock):
 	x = sock.recv(1024)
 	x = x.decode("utf-8")
-	print(x)
 	if "PING" in x and ":Supports" not in x:
-			sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
+		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
+	else:
+		print("\n" + x)
+		print(">")
 			
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
@@ -86,6 +88,8 @@ def send_quit(sock):
 def channel_switch(session, channel):
 	if channel[0] != "#":
 		channel = "#" + channel
+	if session.channel:
+		leave_channel(session, session.channel)
 	session.channel = channel
 	session.sock.send(bytes("join " + channel + "\n", "utf-8"))
 
@@ -95,20 +99,29 @@ def away(session, message):
 		if len(command) > 1:
 			command[1] = ":" + command[1]
 			message = command[0] + " " + command[1]
-		session.sock.send(bytes("away "+message + "\n", "utf-8"))
+		session.sock.send(bytes("away "+ message + "\n", "utf-8"))
 	else:
 		session.sock.send(bytes("away\n", "utf-8"))
 
 def ison(session, person):
 	session.sock.send(bytes("ison "+person+"\n", "utf-8"))	
 
+def leave(session, message):
+	if message[0] != "#":
+		message = "#" + message
+	command = message.split(" ", 1)
+	if len(command) > 1:
+		command[1] = ":" + command[1]
+		message = command[0] + " " + command[1]
+		
+	session.sock.send(bytes("part " + message + "\n", "utf-8"))
 #end
 
 def main():
 	commands = {
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
 		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":None, 
-		"NOTICE":send_msg, "PART":None, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":send_quit, 
+		"NOTICE":send_msg, "PART":leave, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":send_quit, 
 		"TOPIC":None, "WALLOPS":None, "WHO":None, "WHOIS":None
 	}
 
