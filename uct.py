@@ -64,8 +64,9 @@ def PONG(sock):
 	if "PING" in x and ":Supports" not in x:
 		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
 	else:
+		#needs work
 		print("\n" + x)
-		print(">")
+		x = input("Enter a command: ")
 			
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
@@ -135,19 +136,22 @@ def main():
 	channel = None
 	while True:
 		try:
-			x = input("Enter a command2: ")
-			if x[0] == '/':
-				c = x.split(" ", 1)
-				c[0] = c[0][1:].upper()
-				command = c[0]
-				if(len(c) > 1):
-					if command in commands.keys():
-						commands[command](session, c[1])
-				else:
-					if command in commands.keys():
-						x = commands[command](sd)
-			elif session.channel:
-				commands["NOTICE"](session, (session.channel + " " + x))
+			x = input("Enter a command: ")
+			if len(x) > 0:
+				if x[0] == '/':
+					c = x.split(" ", 1)
+					c[0] = c[0][1:].upper()
+					command = c[0]
+					if(len(c) > 1):
+						if command in commands.keys():
+							commands[command](session, c[1])
+					else:
+						if command in commands.keys():
+							x = commands[command](sd)
+				elif session.channel:
+					commands["NOTICE"](session, (session.channel + " " + x))
+			else:
+				print("Please enter something valid")
 		except KeyboardInterrupt:
 			print("Keyboard Interrupt caught..")
 			thread.running[0] = 0
