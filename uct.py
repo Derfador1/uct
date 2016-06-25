@@ -91,7 +91,7 @@ def channel_switch(session, channel):
 	if channel[0] != "#":
 		channel = "#" + channel
 	if session.channel:
-		leave_channel(session, session.channel)
+		leave(session, session.channel)
 	session.channel = channel
 	session.sock.send(bytes("join " + channel + "\n", "utf-8"))
 
@@ -118,10 +118,18 @@ def leave(session, message):
 	session.sock.send(bytes("part " + message + "\n", "utf-8"))
 #end
 
+def change_name(session, new_name):
+	if new_name:
+		if len(new_name) > 0 and len(new_name) <= 9:
+			session.sock.send(bytes("nick " + new_name + "\n", "utf-8"))
+		else:
+			print("The length of the new username must be less than 9 characters long.\n")
+			x = input("Enter a command: ")
+
 def main():
 	commands = {
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
-		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":None, 
+		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":change_name, 
 		"NOTICE":send_msg, "PART":leave, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":send_quit, 
 		"TOPIC":None, "WALLOPS":None, "WHO":None, "WHOIS":None
 	}
