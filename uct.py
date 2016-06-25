@@ -119,6 +119,7 @@ def change_name(session, new_name):
 			print("The length of the new username must be less than 9 characters long.\n")
 			
 def pong(session, void):
+	print("\nEnter a command: ", end="")
 	pass
 
 def ping(session, target):
@@ -139,12 +140,21 @@ def motd(session, void):
 	session.sock.send(bytes("motd\n", "utf-8"))	
 	
 def lusers(session, void):
-	session.sock.send(bytes("lusers\n", "utf-8"))	
+	session.sock.send(bytes("lusers\n", "utf-8"))
+	
+def list1(session, channel):
+	if channel:
+		if channel[0] != "#":
+			channel = "#" + channel
+		session.sock.send(bytes("list "+ channel + "\n", "utf-8"))
+	else:
+		session.sock.send(bytes("list\n", "utf-8"))
+	
 
 def main():
 	commands = {
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
-		"JOIN":channel_switch, "LIST":None, "LUSERS":lusers, "MOTD":motd, "NICK":change_name, 
+		"JOIN":channel_switch, "LIST":list1, "LUSERS":lusers, "MOTD":motd, "NICK":change_name, 
 		"NOTICE":send_msg, "PART":leave, "PING":ping, "PONG":pong, "PRIVMSG":send_msg, "QUIT":send_quit, 
 		"TOPIC":None, "WALLOPS":None, "WHO":who, "WHOIS":who_is
 	}
