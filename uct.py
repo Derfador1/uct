@@ -55,15 +55,16 @@ def pong_handle(sock):
 	x = x.decode("utf-8")
 	if "PING" in x and ":Supports" not in x:
 		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
-
-	print("\n" + x + "\nEnter a command: ", end="")
+	else:
+		print("\n" + x + "\nEnter a command: ", end="")
 			
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
 	
 def send_msg(session, message):
 	message = message.split(" ", 1)
-	session.sock.send(bytes("privmsg " + message[0] + " :" + message[1] + "\n", "utf-8"))
+	session.sock.send(bytes("privmsg " + message[0] + " : " + message[1] + "\n", "utf-8"))
+	print("\nEnter a command: ", end="")
 
 def send_help(session, void):
 	session.sock.send(bytes("help\n", "utf-8"))
@@ -136,11 +137,14 @@ def who_is(session, name):
 			
 def motd(session, void):
 	session.sock.send(bytes("motd\n", "utf-8"))	
+	
+def lusers(session, void):
+	session.sock.send(bytes("lusers\n", "utf-8"))	
 
 def main():
 	commands = {
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
-		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MOTD":motd, "NICK":change_name, 
+		"JOIN":channel_switch, "LIST":None, "LUSERS":lusers, "MOTD":motd, "NICK":change_name, 
 		"NOTICE":send_msg, "PART":leave, "PING":ping, "PONG":pong, "PRIVMSG":send_msg, "QUIT":send_quit, 
 		"TOPIC":None, "WALLOPS":None, "WHO":who, "WHOIS":who_is
 	}
