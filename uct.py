@@ -39,7 +39,7 @@ def poller(sock, running):
 		# Retrieve the actual socket from its file descriptor
 			s = fd_to_socket[fd]
 			if flag & (select.POLLIN | select.POLLPRI):
-				PONG(sock)
+				pong_handle(sock)
 
 def user_create(sock):
 	user = "user stephen james iracane reed\n"
@@ -50,7 +50,7 @@ def user_create(sock):
 	print(x.decode('utf-8'))
 
 #ping response found with the help of SPC Primm
-def PONG(sock):
+def pong_handle(sock):
 	x = sock.recv(1024)
 	x = x.decode("utf-8")
 	if "PING" in x and ":Supports" not in x:
@@ -78,9 +78,6 @@ def send_quit(sock, session):
 #logic and structure found from working with
 #SPC Primm
 #start
-def who(session, channel):
-	session.sock.send(bytes("who " + channel + "\n", "utf-8"))
-
 def channel_switch(session, channel):
 	if channel[0] != "#":
 		channel = "#" + channel
@@ -111,21 +108,39 @@ def leave(session, message):
 		message = command[0] + " " + command[1]
 	session.sock.send(bytes("part " + message + "\n", "utf-8"))
 #end
+def who(session, channel):
+	session.sock.send(bytes("who " + channel + "\n", "utf-8"))
 
 def change_name(session, new_name):
 	if new_name:
-		if len(new_name) 
-		> 0 and len(new_name) <= 9:
+		if len(new_name) > 0 and len(new_name) <= 9:
 			session.sock.send(bytes("nick " + new_name + "\n", "utf-8"))
 		else:
 			print("The length of the new username must be less than 9 characters long.\n")
+			
+def pong(session, void):
+	pass
+
+def ping(session, target):
+	if target:
+		if len(target) <= 9:
+			session.sock.send(bytes("ping " + target + "\n", "utf-8"))
+		else:
+			print("Invalid target given")
+			
+def who_is(session, name):
+	if name:
+		if len(name) > 0 and len(name) <= 9:
+			session.sock.send(bytes("whois " + name + "\n", "utf-8"))
+		else:
+			print("Incorrect input given.\n")
 
 def main():
 	commands = {
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
-		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MODE":None, "MOTD":None, "NICK":change_name, 
-		"NOTICE":send_msg, "PART":leave, "PING":None, "PONG":None, "PRIVMSG":send_msg, "QUIT":send_quit, 
-		"TOPIC":None, "WALLOPS":None, "WHO":None, "WHOIS":None
+		"JOIN":channel_switch, "LIST":None, "LUSERS":None, "MOTD":motd, "NICK":change_name, 
+		"NOTICE":send_msg, "PART":leave, "PING":ping, "PONG":pong, "PRIVMSG":send_msg, "QUIT":send_quit, 
+		"TOPIC":None, "WALLOPS":None, "WHO":who, "WHOIS":who_is
 	}
 
 	sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
