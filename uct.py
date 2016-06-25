@@ -9,22 +9,21 @@ import time
 
 #basis for both classes acquired on 
 #http://www.tutorialspoint.com/python/python_multithreading.htm
-#and from help from SPC Primm
+#and site found with help from SPC Primm
 class myThread (threading.Thread):
-	def __init__(self, threadID, name, sock):
+	def __init__(self, sock):
 		threading.Thread.__init__(self)
-		self.threadID = threadID
-		self.name = name
 		self.sock = sock
 		self.running = [1]
 	def run(self):
-		print("Starting " + self.name)
 		poller(self.sock, self.running)
 
+#structure foudn with help from SPC Primm
 class status:
 	def __init__(self):
 		self.channel = None
 		self.sock = None
+		self.worker = None
 
 def poller(sock, running):
 	#copied from https://pymotw.com/2/select/ and with help of SPC Primm
@@ -75,14 +74,18 @@ def send_msg(session, message):
 	message = message.split(" ", 1)
 	session.sock.send(bytes("privmsg " + message[0] + " :" + message[1] + "\n", "utf-8"))
 
-def send_help(sock):
+def send_help(sock, session):
 	sock.send(bytes("help\n", "utf-8"))
 	x = sock.recv(1024)
 	x = x.decode("utf-8")
 	print(x)
 
-def send_quit(sock):
-	sock.send(bytes("quit\n", "utf-8"))
+def send_quit(sock, session):
+	#sock.send(bytes("quit\n", "utf-8"))
+	session.worker.running[0] = 0
+	session.worker.join()
+	session.sock.close()
+	exit(0)
 
 #logic and structure found from working with
 #SPC Primm
@@ -139,9 +142,8 @@ def main():
 	session = status()
 	session.sock = sd
 	user_create(sd)
-	thread = myThread(1, "Thread 1", sd)
-	thread.start()
-	channel = None
+	session.worker = myThread(sd)
+	session.worker.start()
 	while True:
 		try:
 			x = input("Enter a command: ")
@@ -155,15 +157,16 @@ def main():
 							commands[command](session, c[1])
 					else:
 						if command in commands.keys():
-							x = commands[command](sd)
+							commands[command](sd, session)
 				elif session.channel:
 					commands["NOTICE"](session, (session.channel + " " + x))
 			else:
 				print("Please enter something valid")
 		except KeyboardInterrupt:
 			print("Keyboard Interrupt caught..")
-			thread.running[0] = 0
-			thread.join()
+			session.worker.running[0] = 0
+			session.worker.join()
+			session.sock.close()
 			break
 
 
