@@ -117,6 +117,8 @@ def change_name(session, new_name):
 			session.sock.send(bytes("nick " + new_name + "\n", "utf-8"))
 		else:
 			print("The length of the new username must be less than 9 characters long.\n")
+	else:
+		print("\nEnter a command: ", end="")
 			
 def pong(session, void):
 	print("\nEnter a command: ", end="")
@@ -137,6 +139,9 @@ def who_is(session, name):
 			session.sock.send(bytes("whois " + name + "\n", "utf-8"))
 		else:
 			print("Incorrect input given.\n")
+	else:
+		print("\nEnter a command: ", end="")
+
 			
 def motd(session, void):
 	session.sock.send(bytes("motd\n", "utf-8"))	
@@ -151,13 +156,31 @@ def list1(session, channel):
 		session.sock.send(bytes("list "+ channel + "\n", "utf-8"))
 	else:
 		session.sock.send(bytes("list\n", "utf-8"))
+		
+		
+def topic(session, channel):
+	if channel:
+		if channel[0] != "#":
+			channel = "#" + channel
+		session.sock.send(bytes("topic "+ channel + "\n", "utf-8"))
+	else:
+		print("\nEnter a command: ", end="")
+		
+def broadcast(session, message):
+	if message[0] != ":":
+		message = ":" + message
+	session.sock.send(bytes("wallops "+ message + "\n", "utf-8"))
+
+	#message = message.split(" ", 1)
+	#session.sock.send(bytes("wallops " + message[0] + " : " + message[1] + "\n", "utf-8"))
+	#print("\nEnter a command: ", end="")
 
 def main():
 	commands = {
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
 		"JOIN":channel_switch, "LIST":list1, "LUSERS":lusers, "MOTD":motd, "NICK":change_name, 
 		"NOTICE":send_msg, "PART":leave, "PING":ping, "PONG":pong, "PRIVMSG":send_msg, "QUIT":send_quit, 
-		"TOPIC":None, "WALLOPS":None, "WHO":who, "WHOIS":who_is
+		"TOPIC":None, "WALLOPS":broadcast, "WHO":who, "WHOIS":who_is
 	}
 
 	sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
