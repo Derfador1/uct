@@ -162,6 +162,14 @@ def topic(session, channel):
 	if channel:
 		if channel[0] != "#":
 			channel = "#" + channel
+		channel = channel.split(" ", 1)
+		
+		if len(channel) > 1:
+			channel[1] = ":" + channel[1]
+			channel = channel[0] + " " + channel[1]
+		else:
+			channel = channel[0]
+		
 		session.sock.send(bytes("topic "+ channel + "\n", "utf-8"))
 	else:
 		print("\nEnter a command: ", end="")
@@ -180,7 +188,7 @@ def main():
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
 		"JOIN":channel_switch, "LIST":list1, "LUSERS":lusers, "MOTD":motd, "NICK":change_name, 
 		"NOTICE":send_msg, "PART":leave, "PING":ping, "PONG":pong, "PRIVMSG":send_msg, "QUIT":send_quit, 
-		"TOPIC":None, "WALLOPS":broadcast, "WHO":who, "WHOIS":who_is
+		"TOPIC":topic, "WALLOPS":broadcast, "WHO":who, "WHOIS":who_is
 	}
 
 	sd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
