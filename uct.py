@@ -39,14 +39,7 @@ def poller(sock, running):
 		# Retrieve the actual socket from its file descriptor
 			s = fd_to_socket[fd]
 			if flag & (select.POLLIN | select.POLLPRI):
-				#x = sock.recv(1024)
-				#x = x.decode("utf-8")
-				#if "PING" in x and ":Supports" not in x:
-				#	print("fuck")
-				#else:
-				#	sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
 				PONG(sock)
-				
 
 def user_create(sock):
 	user = "user stephen james iracane reed\n"
@@ -64,24 +57,19 @@ def PONG(sock):
 		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
 	else:
 		#needs work
-		print("\n" + x)
-		x = input("Enter a command: ")
+		print("\n" + x + "\n", end="")
 			
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
 	
 def send_msg(session, message):
-	message = message.split(" ", 1)
+	message = messadege.split(" ", 1)
 	session.sock.send(bytes("privmsg " + message[0] + " :" + message[1] + "\n", "utf-8"))
 
 def send_help(sock, session):
 	sock.send(bytes("help\n", "utf-8"))
-	x = sock.recv(1024)
-	x = x.decode("utf-8")
-	print(x)
 
 def send_quit(sock, session):
-	#sock.send(bytes("quit\n", "utf-8"))
 	session.worker.running[0] = 0
 	session.worker.join()
 	session.sock.close()
@@ -90,6 +78,9 @@ def send_quit(sock, session):
 #logic and structure found from working with
 #SPC Primm
 #start
+def who(session, channel):
+	session.sock.send(bytes("who " + channel + "\n", "utf-8"))
+
 def channel_switch(session, channel):
 	if channel[0] != "#":
 		channel = "#" + channel
@@ -123,11 +114,11 @@ def leave(session, message):
 
 def change_name(session, new_name):
 	if new_name:
-		if len(new_name) > 0 and len(new_name) <= 9:
+		if len(new_name) 
+		> 0 and len(new_name) <= 9:
 			session.sock.send(bytes("nick " + new_name + "\n", "utf-8"))
 		else:
 			print("The length of the new username must be less than 9 characters long.\n")
-			x = input("Enter a command: ")
 
 def main():
 	commands = {
