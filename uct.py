@@ -128,6 +128,8 @@ def ping(session, target):
 			session.sock.send(bytes("ping " + target + "\n", "utf-8"))
 		else:
 			print("Invalid target given")
+	else:
+		print("\nEnter a command: ", end="")
 			
 def who_is(session, name):
 	if name:
@@ -149,7 +151,6 @@ def list1(session, channel):
 		session.sock.send(bytes("list "+ channel + "\n", "utf-8"))
 	else:
 		session.sock.send(bytes("list\n", "utf-8"))
-	
 
 def main():
 	commands = {
@@ -185,6 +186,7 @@ def main():
 					commands["NOTICE"](session, (session.channel + " " + x))
 			else:
 				print("Please enter something valid")
+				print("Enter a command: ", end="")
 		except KeyboardInterrupt:
 			print("Keyboard Interrupt caught..")
 			session.worker.running[0] = 0
