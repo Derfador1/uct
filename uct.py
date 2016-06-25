@@ -55,21 +55,20 @@ def pong_handle(sock):
 	x = x.decode("utf-8")
 	if "PING" in x and ":Supports" not in x:
 		sock.send(bytes("PONG " + x[6:] + '\n', 'utf-8'))
-	else:
-		#needs work
-		print("\n" + x + "\n", end="")
+
+	print("\n" + x + "\nEnter a command: ", end="")
 			
 #basic outline for how to send message acquired from 
 #https://github.com/dsprimm/uct/blob/master/uct.py
 	
 def send_msg(session, message):
-	message = messadege.split(" ", 1)
+	message = message.split(" ", 1)
 	session.sock.send(bytes("privmsg " + message[0] + " :" + message[1] + "\n", "utf-8"))
 
-def send_help(sock, session):
-	sock.send(bytes("help\n", "utf-8"))
+def send_help(session, void):
+	session.sock.send(bytes("help\n", "utf-8"))
 
-def send_quit(sock, session):
+def send_quit(session, void):
 	session.worker.running[0] = 0
 	session.worker.join()
 	session.sock.close()
@@ -134,6 +133,9 @@ def who_is(session, name):
 			session.sock.send(bytes("whois " + name + "\n", "utf-8"))
 		else:
 			print("Incorrect input given.\n")
+			
+def motd(session, void):
+	session.sock.send(bytes("motd\n", "utf-8"))	
 
 def main():
 	commands = {
@@ -150,9 +152,10 @@ def main():
 	user_create(sd)
 	session.worker = myThread(sd)
 	session.worker.start()
+	print("Enter a command: ", end="")
 	while True:
 		try:
-			x = input("Enter a command: ")
+			x = input()
 			if len(x) > 0:
 				if x[0] == '/':
 					c = x.split(" ", 1)
@@ -163,7 +166,7 @@ def main():
 							commands[command](session, c[1])
 					else:
 						if command in commands.keys():
-							commands[command](sd, session)
+							commands[command](session, None)
 				elif session.channel:
 					commands["NOTICE"](session, (session.channel + " " + x))
 			else:
