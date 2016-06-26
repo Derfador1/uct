@@ -232,14 +232,17 @@ def main():
 					if(len(c) > 1):
 						if command in commands.keys():
 							commands[command](session, c[1])
+						else:
+							print("Enter a command: ", end="")
 					else:
 						if command in commands.keys():
 							commands[command](session, None)
+						else:
+							print("Enter a command: ", end="")
 				elif session.channel:
 					commands["NOTICE"](session, (session.channel + " " + x))
 			else:
 				print("Please enter something valid")
-				print("Enter a command: ", end="")
 		except KeyboardInterrupt:
 			#catches keyboard interrupt and closes gracefully
 			print("\nKeyboard Interrupt caught..")
