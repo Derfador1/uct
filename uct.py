@@ -194,11 +194,7 @@ def broadcast(session, message):
 	if message[0] != ":":
 		message = ":" + message
 	session.sock.send(bytes("wallops "+ message + "\n", "utf-8"))
-
-	#message = message.split(" ", 1)
-	#session.sock.send(bytes("wallops " + message[0] + " : " + message[1] + "\n", "utf-8"))
-	#print("\nEnter a command: ", end="")
-
+	
 def main():
 	commands = {
 		"AWAY":away, "ISON":ison, "HELP":send_help, "INFO":send_help,
